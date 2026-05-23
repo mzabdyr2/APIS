@@ -1,58 +1,208 @@
-import openai
-from llm_client import get_response
-from logger_config import setup_logger
+"""Klasa Chatbot - integruje LLMClient, ConversationMemory i logger.
 
-MAX_HISTORY = 20
+To 'mozg' aplikacji. Tutaj dzieje sie:
+- walidacja zapytan uzytkownika,
+- przygotowanie kontekstu (system prompt + przyciecie historii),
+- wywolanie modelu,
+- obsluga bledow (polaczenie, limit, autoryzacja, bledne odpowiedzi),
+- logowanie zapytan, odpowiedzi i bledow (wymaganie 4.5).
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from openai import (
+    APIConnectionError,
+    APIError,
+    APIStatusError,
+    APITimeoutError,
+    AuthenticationError,
+    BadRequestError,
+    RateLimitError,
+)
+
+from app.config import Settings, settings
+from app.llm_client import LLMClient
+from app.logger_config import setup_logger
+from app.memory import ContextOverflowError, ConversationMemory
+
 logger = setup_logger()
 
+
+@dataclass
+class ChatResult:
+    """Wynik pojedynczej tury rozmowy - latwy do serializacji w API."""
+
+    reply: str
+    ok: bool
+    error: str | None = None
+    used_tokens: int = 0
+    history_length: int = 0
+
+
 class Chatbot:
-    def __init__(self, system_prompt: str = "You are a helpful assistant."):
-        self.system_prompt = system_prompt
-        self.history = []
-        logger.info("Chatbot zainicjalizowany")
+    def __init__(
+        self,
+        cfg: Settings | None = None,
+        llm_client: LLMClient | None = None,
+        system_prompt: str | None = None,
+    ) -> None:
+        self.cfg = cfg or settings
+        self.llm = llm_client or LLMClient(self.cfg)
+        self.memory = ConversationMemory(
+            system_prompt=system_prompt or self.cfg.system_prompt,
+            max_context_tokens=self.cfg.max_context_tokens,
+            max_history_messages=self.cfg.max_history_messages,
+        )
+        logger.info(
+            "Chatbot zainicjalizowany | model=%s | max_ctx=%d tok | max_hist=%d msg",
+            self.cfg.llm_model,
+            self.cfg.max_context_tokens,
+            self.cfg.max_history_messages,
+        )
 
-    def _build_messages(self) -> list[dict]:
-        trimmed = self.history[-MAX_HISTORY:]
-        if len(self.history) > MAX_HISTORY:
-            logger.warning(f"Historia przycięta z {len(self.history)} do {MAX_HISTORY} wiadomości")
-        return [{"role": "system", "content": self.system_prompt}] + trimmed
+    @property
+    def history(self) -> list[dict]:
+        return list(self.memory.history)
 
-    def chat(self, user_message: str) -> str:
-        # walidacja inputu
+    def reset(self) -> None:
+        self.memory.reset()
+        logger.info("Historia rozmowy wyczyszczona")
+
+    def chat(self, user_message: str) -> ChatResult:
         if not user_message or not user_message.strip():
             logger.warning("Otrzymano puste zapytanie")
-            return "Proszę wpisz wiadomość."
+            return ChatResult(reply="Prosze wpisz wiadomosc.", ok=False, error="empty_input")
 
-        logger.info(f"Zapytanie użytkownika: {user_message[:50]}...")  # pierwsze 50 znaków
-        self.history.append({"role": "user", "content": user_message})
+        user_message = user_message.strip()
+        logger.info("USER: %s", _shorten(user_message))
+        self.memory.add_user(user_message)
 
         try:
-            messages = self._build_messages()
-            response = get_response(messages)
+            messages, used = self.memory.build_messages()
+            logger.debug("Wysylam %d wiadomosci do modelu (%d tokenow)", len(messages), used)
+            reply = self.llm.generate(messages)
 
-            if not response:
-                raise ValueError("Model zwrócił pustą odpowiedź")
+            if not reply.strip():
+                raise ValueError("Model zwrocil pusta odpowiedz")
 
-            self.history.append({"role": "assistant", "content": response})
-            logger.info("Odpowiedź wygenerowana pomyślnie")
-            return response
+            self.memory.add_assistant(reply)
+            logger.info("ASSISTANT: %s", _shorten(reply))
+            return ChatResult(
+                reply=reply,
+                ok=True,
+                used_tokens=used,
+                history_length=len(self.memory),
+            )
 
-        except openai.APIConnectionError:
-            logger.error("Brak połączenia z Ollama – czy serwer działa?")
-            self.history.pop()  # cofamy wiadomość użytkownika bo nie dostaliśmy odpowiedzi
-            return "Błąd: nie można połączyć się z modelem."
+        except ContextOverflowError as exc:
+            logger.error("Przekroczono limit kontekstu: %s", exc)
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Twoja wiadomosc jest za dluga - skroc ja albo zresetuj rozmowe.",
+                ok=False,
+                error="context_overflow",
+                history_length=len(self.memory),
+            )
 
-        except openai.APIStatusError as e:
-            logger.error(f"Błąd API: {e.status_code} – {e.message}")
-            self.history.pop()
-            return f"Błąd API: {e.status_code}"
+        except APITimeoutError:
+            logger.error("Timeout polaczenia z modelem")
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Model nie odpowiedzial w wyznaczonym czasie. Sprobuj ponownie.",
+                ok=False,
+                error="timeout",
+                history_length=len(self.memory),
+            )
 
-        except ValueError as e:
-            logger.error(f"Nieoczekiwana odpowiedź modelu: {e}")
-            self.history.pop()
-            return "Błąd: model zwrócił nieprawidłową odpowiedź."
+        except APIConnectionError:
+            logger.error("Brak polaczenia z serwerem LLM (czy Ollama dziala?)")
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Nie moge polaczyc sie z modelem. Sprawdz czy serwer LLM dziala.",
+                ok=False,
+                error="connection_error",
+                history_length=len(self.memory),
+            )
+
+        except AuthenticationError:
+            logger.error("Zly klucz API")
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Blad uwierzytelnienia w API modelu.",
+                ok=False,
+                error="auth_error",
+                history_length=len(self.memory),
+            )
+
+        except RateLimitError:
+            logger.error("Przekroczono limit zapytan do API")
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Przekroczono limit zapytan do modelu. Poczekaj chwile.",
+                ok=False,
+                error="rate_limit",
+                history_length=len(self.memory),
+            )
+
+        except BadRequestError as exc:
+            logger.error("Bledne zapytanie do modelu: %s", exc)
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Zapytanie zostalo odrzucone przez model (mozliwe przekroczenie kontekstu).",
+                ok=False,
+                error="bad_request",
+                history_length=len(self.memory),
+            )
+
+        except APIStatusError as exc:
+            logger.error("Blad API (HTTP %s): %s", exc.status_code, exc)
+            self.memory.history.pop()
+            return ChatResult(
+                reply=f"Blad serwera modelu (HTTP {exc.status_code}).",
+                ok=False,
+                error=f"api_error_{exc.status_code}",
+                history_length=len(self.memory),
+            )
+
+        except APIError as exc:
+            logger.error("Inny blad biblioteki OpenAI: %s", exc)
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Nieoczekiwany blad po stronie modelu.",
+                ok=False,
+                error="api_error",
+                history_length=len(self.memory),
+            )
+
+        except ValueError as exc:
+            logger.error("Niepoprawna odpowiedz modelu: %s", exc)
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Model zwrocil nieprawidlowa odpowiedz.",
+                ok=False,
+                error="invalid_response",
+                history_length=len(self.memory),
+            )
+
+        except Exception as exc:
+            logger.exception("Nieprzewidziany blad: %s", exc)
+            self.memory.history.pop()
+            return ChatResult(
+                reply="Wystapil nieoczekiwany blad.",
+                ok=False,
+                error="unknown",
+                history_length=len(self.memory),
+            )
+
+
+def _shorten(text: str, limit: int = 120) -> str:
+    text = text.replace("\n", " ")
+    return text if len(text) <= limit else text[:limit] + "..."
+
 
 if __name__ == "__main__":
     bot = Chatbot()
-    print(bot.chat("Cześć"))
-    print(bot.history)
+    result = bot.chat("Czesc, kim jestes?")
+    print(result.reply)
+    print(f"\nLog: ok={result.ok}, tokens={result.used_tokens}, history={result.history_length}")
