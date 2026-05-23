@@ -1,3 +1,64 @@
 2026-05-12 21:46:37 | INFO | Chatbot zainicjalizowany
 2026-05-12 21:46:37 | INFO | Zapytanie użytkownika: Cześć...
 2026-05-12 21:46:42 | INFO | Odpowiedź wygenerowana pomyślnie
+2026-05-23 08:34:29 | INFO     | chatbot | Chatbot zainicjalizowany | model=llama3.2 | max_ctx=3000 tok | max_hist=20 msg
+2026-05-23 08:34:29 | INFO     | chatbot | USER: Czesc bot
+2026-05-23 08:34:29 | DEBUG    | chatbot | Wysylam 2 wiadomosci do modelu (99 tokenow)
+2026-05-23 08:34:29 | INFO     | chatbot | ASSISTANT: (echo) Czesc bot
+2026-05-23 08:34:29 | INFO     | chatbot | USER: Pamietasz co napisalem?
+2026-05-23 08:34:29 | DEBUG    | chatbot | Wysylam 4 wiadomosci do modelu (123 tokenow)
+2026-05-23 08:34:29 | INFO     | chatbot | ASSISTANT: (echo) Pamietasz co napisalem?
+2026-05-23 08:34:29 | INFO     | chatbot | Usunieto sesje 79003fe9-d807-40ce-8266-0719aaf99764
+2026-05-23 08:34:39 | INFO     | chatbot | Chatbot zainicjalizowany | model=llama3.2 | max_ctx=3000 tok | max_hist=20 msg
+2026-05-23 08:34:39 | INFO     | chatbot | USER: test
+2026-05-23 08:34:39 | DEBUG    | chatbot | Wysylam 2 wiadomosci do modelu (96 tokenow)
+2026-05-23 08:34:39 | ERROR    | chatbot | Brak polaczenia z serwerem LLM (czy Ollama dziala?)
+2026-05-23 08:34:51 | INFO     | chatbot | Chatbot zainicjalizowany | model=llama3.2 | max_ctx=50 tok | max_hist=50 msg
+2026-05-23 08:34:51 | INFO     | chatbot | USER: Wiadomosc numer 0 z dosc dluga trescia powtarzana wielokrotnie aby zajac troche tokenow tekstu
+2026-05-23 08:34:51 | ERROR    | chatbot | Przekroczono limit kontekstu: System prompt sam przekracza limit kontekstu - zwieksz max_context_tokens albo skroc system_prompt.
+2026-05-23 08:35:07 | INFO     | chatbot | Chatbot zainicjalizowany | model=llama3.2 | max_ctx=300 tok | max_hist=50 msg
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 0 z trescia powtorzona x10 Wiadomosc 0 z trescia powtorzona x10 Wiadomosc 0 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 2 wiadomosci do modelu (89 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 1 z trescia powtorzona x10 Wiadomosc 1 z trescia powtorzona x10 Wiadomosc 1 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 4 wiadomosci do modelu (177 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 2 z trescia powtorzona x10 Wiadomosc 2 z trescia powtorzona x10 Wiadomosc 2 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 6 wiadomosci do modelu (265 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 3 z trescia powtorzona x10 Wiadomosc 3 z trescia powtorzona x10 Wiadomosc 3 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 4 z trescia powtorzona x10 Wiadomosc 4 z trescia powtorzona x10 Wiadomosc 4 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 5 z trescia powtorzona x10 Wiadomosc 5 z trescia powtorzona x10 Wiadomosc 5 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 6 z trescia powtorzona x10 Wiadomosc 6 z trescia powtorzona x10 Wiadomosc 6 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 7 z trescia powtorzona x10 Wiadomosc 7 z trescia powtorzona x10 Wiadomosc 7 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 8 z trescia powtorzona x10 Wiadomosc 8 z trescia powtorzona x10 Wiadomosc 8 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 9 z trescia powtorzona x10 Wiadomosc 9 z trescia powtorzona x10 Wiadomosc 9 z trescia powtorzona x10 Wiadomosc...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 10 z trescia powtorzona x10 Wiadomosc 10 z trescia powtorzona x10 Wiadomosc 10 z trescia powtorzona x10 Wiadom...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 11 z trescia powtorzona x10 Wiadomosc 11 z trescia powtorzona x10 Wiadomosc 11 z trescia powtorzona x10 Wiadom...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 12 z trescia powtorzona x10 Wiadomosc 12 z trescia powtorzona x10 Wiadomosc 12 z trescia powtorzona x10 Wiadom...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 13 z trescia powtorzona x10 Wiadomosc 13 z trescia powtorzona x10 Wiadomosc 13 z trescia powtorzona x10 Wiadom...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
+2026-05-23 08:35:07 | INFO     | chatbot | USER: Wiadomosc 14 z trescia powtorzona x10 Wiadomosc 14 z trescia powtorzona x10 Wiadomosc 14 z trescia powtorzona x10 Wiadom...
+2026-05-23 08:35:07 | DEBUG    | chatbot | Wysylam 7 wiadomosci do modelu (274 tokenow)
+2026-05-23 08:35:07 | INFO     | chatbot | ASSISTANT: krotka odpowiedz
