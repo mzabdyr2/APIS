@@ -1,8 +1,7 @@
 # Production Ready Chatbot
 
 Chatbot oparty o LLM z REST API, obsługą sesji, kontrolą długości kontekstu
-i pełnym logowaniem. Projekt na przedmiot **Aktualne Problemy Informatyki
-Stosowanej** (Geoinformatyka II st.) – Zadanie 3.
+i pełnym logowaniem.
 
 ## Struktura projektu
 
@@ -92,17 +91,6 @@ curl http://localhost:8000/sessions/$SID/history
 # Usunięcie sesji
 curl -X DELETE http://localhost:8000/sessions/$SID
 ```
-
-## Spełnione wymagania
-
-| Ocena | Wymaganie |
-|---|---|
-| 3.5 | Klasa, prompt systemowy, historia, parametry generacji, integracja z LLM |
-| 4.0 | Kontrola długości kontekstu (sliding window po tokenach) |
-| 4.5 | Pełna obsługa błędów + logowanie do plików |
-| 5.0 | REST API w FastAPI + obsługa sesji użytkownika (UUID4) |
-
-Szczegóły w `sprawozdanie.pdf`.
 
 ## Konfiguracja
 
